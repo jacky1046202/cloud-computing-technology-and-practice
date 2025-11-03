@@ -34,3 +34,5 @@ BEGIN
     RETURN v_pet_id;
 END;
 $$;
+
+GRANT EXECUTE ON FUNCTION public.select_pet(e.species, uuid) TO authenticated, anon;
