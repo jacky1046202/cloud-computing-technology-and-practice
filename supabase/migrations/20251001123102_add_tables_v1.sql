@@ -69,9 +69,11 @@ CREATE TABLE "internal"."accounts" (
 CREATE TABLE "records" (
   "id" uuid PRIMARY KEY,
   "user_id" uuid NOT NULL,
-  "start_time" timestamptz NOT NULL,
-  "end_time" timestamptz NOT NULL,
-  "description" varchar(100)
+  "distance" float4,
+  "exercise_time" int2,
+  "calories" float4,
+  "description" varchar(100),
+  "created_at" timestamptz DEFAULT now(),
 );
 
 CREATE TABLE "storage_items" (
