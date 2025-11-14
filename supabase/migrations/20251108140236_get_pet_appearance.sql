@@ -13,6 +13,7 @@ DECLARE
     v_normalface text;
     v_sadface text;
     v_final_face_url text;
+    v_status_text text;
     
     v_default_empty_url text := 'https://ndcvnxzsdywwvnwellfx.supabase.co/storage/v1/object/sign/Item/wore/transparent.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81YzM0OWUyZC00NjEzLTQ3ODUtOGE4Ny1lNjY0NzdhM2RlNmYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJJdGVtL3dvcmUvdHJhbnNwYXJlbnQucG5nIiwiaWF0IjoxNzYyNjEzNDU0LCJleHAiOjQ5MTYyMTM0NTR9.D-qFD78mN0Dk9cWz1tFL7vHGlU0piiMhSxp6V_5Az9I';
     
@@ -40,7 +41,6 @@ BEGIN
         RAISE EXCEPTION 'Pet not found for user %', p_user_id;
     END IF;
 
-
     -- 2. 決定基礎身體 URL
     IF v_pet_record.species = 'Dog' THEN
         v_base_body_url      := v_dog_body_url;
@@ -62,7 +62,14 @@ BEGIN
             WHEN v_pet_record.hp >= 75 THEN v_happyface
             WHEN v_pet_record.hp >= 30 THEN v_normalface
             ELSE v_sadface           
-        END;
+    END;
+
+    v_status_text := CASE
+        WHEN v_pet_record.hp = 100 THEN '非常活躍'
+        WHEN v_pet_record.hp >= 75 THEN '活躍'
+        WHEN v_pet_record.hp >= 30 THEN '一般般'
+        ELSE '該運動了'
+    END;
 
     -- 4. 查詢所有裝備的圖片 URL
     RETURN (
@@ -72,7 +79,8 @@ BEGIN
             'top', COALESCE(top.item_url, v_default_empty_url),
             'pants', COALESCE(pants.item_url, v_default_empty_url),
             'shoes', COALESCE(shoes.item_url, v_default_empty_url),
-            'accessory', COALESCE(acc.item_url, v_default_empty_url)           
+            'accessory', COALESCE(acc.item_url, v_default_empty_url),   
+            'status_text', v_status_text
         )
         FROM (SELECT 1) AS dummy
         LEFT JOIN internal.clothes AS top ON top.id = v_pet_record.equipped_top_id
