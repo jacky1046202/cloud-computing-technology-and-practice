@@ -40,7 +40,7 @@ BEGIN
     RETURNING hp INTO v_new_hp;
 
     -- 依 HP 門檻更新外觀
-    -- 外觀分級：level 1: 75-100, level 2: 30-74, level 3: 0-29
+    -- 外觀分級：level 1: 100 level 2: 75-99, level 3: 30-74, level 4: 0-29
     -- 回傳更新後的 HP
 
     -- 插入或更新 'internal.accounts'
