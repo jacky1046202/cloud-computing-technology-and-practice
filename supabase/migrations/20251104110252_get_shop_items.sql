@@ -1,6 +1,7 @@
 CREATE OR REPLACE FUNCTION public.get_shop_items(
     p_user_id uuid,
-    p_category_name e.item_category 
+    p_category_name e.item_category,
+    p_search_text text DEFAULT ''
 )
 RETURNS TABLE (
     store_item_id uuid,
@@ -50,7 +51,7 @@ BEGIN
     JOIN 
         internal.clothes c ON s.ref_id = c.id AND s.item_type = 'Clothes'
     WHERE
-        c.category_name = p_category_name;
+        c.category_name = p_category_name AND (p_search_text = '' OR c.name ILIKE '%' || p_search_text || '%');
         
 END;
 $$;

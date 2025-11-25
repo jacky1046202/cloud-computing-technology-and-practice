@@ -1,6 +1,7 @@
 CREATE OR REPLACE FUNCTION public.get_inventory_items(
     p_user_id uuid,
-    p_category_name e.item_category -- 接收 'top', 'pants', 'shoes', 'accessory'
+    p_category_name e.item_category, -- 接收 'top', 'pants', 'shoes', 'accessory'
+    p_search_text text DEFAULT ''
 )
 RETURNS TABLE (
     item_id uuid,        -- 物品本身的 ID (來自 internal.clothes)
@@ -56,7 +57,7 @@ BEGIN
         si.owner_id = p_user_id
         
         -- 並且根據前端傳入的類別名稱進行過濾
-        AND c.category_name = p_category_name;
+        AND c.category_name = p_category_name AND(p_search_text = '' OR c.name ILIKE '%' || p_search_text || '%');
         
 END;
 $$;
