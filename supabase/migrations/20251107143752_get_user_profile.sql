@@ -5,6 +5,8 @@ RETURNS table (
     gender e.gender,
     relationship e.relationship_status,
     dob date,
+    phone text,
+    address text,
     points money
 )
 LANGUAGE plpgsql
@@ -18,6 +20,8 @@ BEGIN
             u.gender, 
             u.relationship, 
             u.dob, 
+            u.phone,
+            u.address,
             COALESCE(a.points, '0.00'::money) AS points
         FROM 
             public.users AS u
