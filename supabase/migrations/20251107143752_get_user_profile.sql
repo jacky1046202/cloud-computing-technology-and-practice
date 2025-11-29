@@ -1,6 +1,7 @@
 CREATE OR REPLACE FUNCTION public.get_user_profile(p_user_id uuid)
 RETURNS table (
     id uuid,
+    username text,
     email text,
     gender e.gender,
     relationship e.relationship_status,
@@ -16,6 +17,7 @@ BEGIN
     RETURN QUERY
         SELECT 
             u.id, 
+            u.username,
             u.email,
             u.gender, 
             u.relationship, 
