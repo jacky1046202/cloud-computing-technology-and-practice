@@ -1,21 +1,38 @@
-CREATE OR REPLACE FUNCTION get_records_summary(
+CREATE OR REPLACE FUNCTION public.get_records_summary(
     p_user_id uuid,
     p_start_date timestamptz,
     p_end_date timestamptz
 )
-RETURNS json  -- 直接回傳一個 JSON 物件
-LANGUAGE sql
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
-    SELECT json_build_object(
-        'total_distance', COALESCE(SUM(distance), 0),
-        'total_time', COALESCE(SUM(exercise_time), 0),
-        'total_calories', COALESCE(SUM(calories), 0)
-    )
-    FROM public.records
-    WHERE user_id = p_user_id
-      AND created_at >= p_start_date
-      AND created_at < p_end_date;
-$$;
+DECLARE
+    v_total_distance float4;
+    v_total_time int; -- 分鐘數
+    v_total_calories float4;
+BEGIN
+    SELECT 
+        -- 使用 COALESCE 防止 NULL
+        COALESCE(SUM(distance), 0),
+        COALESCE(SUM(exercise_time), 0),
+        COALESCE(SUM(calories), 0)
+    INTO 
+        v_total_distance,
+        v_total_time,
+        v_total_calories
+    FROM 
+        public.records
+    WHERE 
+        user_id = p_user_id
+        -- [!!] 修正：改用 start_time 來篩選日期區間
+        AND start_time >= p_start_date 
+        AND start_time < p_end_date;
 
--- 授權給已登入的使用者
-GRANT EXECUTE ON FUNCTION public.get_records_summary(uuid, timestamptz, timestamptz) TO authenticated;
+    RETURN jsonb_build_object(
+        'total_distance', v_total_distance,
+        'total_exercise_time', v_total_time,
+        'total_calories', v_total_calories
+    );
+END;
+$$;
