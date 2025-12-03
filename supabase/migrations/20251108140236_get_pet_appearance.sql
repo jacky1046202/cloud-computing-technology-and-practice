@@ -80,33 +80,49 @@ BEGIN
     -- 4. 回傳 JSON (包含強制脫衣邏輯)
     RETURN (
         SELECT jsonb_build_object(
-            'base_body', v_base_body_url,
-            'face', v_final_face_url,
+            'base_body', jsonb_build_object('url', v_base_body_url, 'z', 10),
+            'face', jsonb_build_object('url', v_final_face_url, 'z', 15),
             'status_text', v_status_text,
             
             -- [!!] 這裡使用 CASE WHEN 來控制衣服
             -- 如果 v_is_overweight 為 TRUE，強制回傳透明圖 (v_default_empty_url)
             -- 否則回傳原本的裝備圖片
             
-            'top', CASE 
-                WHEN v_is_overweight THEN v_default_empty_url 
-                ELSE COALESCE(top.item_url, v_default_empty_url) 
-            END,
+            -- 飾品 (Accessory)
+            'accessory', jsonb_build_object(
+                'url', CASE 
+                    WHEN v_is_overweight THEN v_default_empty_url 
+                    ELSE COALESCE(acc.item_url, v_default_empty_url) 
+                END,
+                'z', COALESCE(acc.layer_order, 50) -- 預設 50
+            ),
+
+            -- 上衣 (Top)
+            'top', jsonb_build_object(
+                'url', CASE 
+                    WHEN v_is_overweight THEN v_default_empty_url 
+                    ELSE COALESCE(top.item_url, v_default_empty_url) 
+                END,
+                'z', COALESCE(top.layer_order, 40) -- 預設 40
+            ),
             
-            'pants', CASE 
-                WHEN v_is_overweight THEN v_default_empty_url 
-                ELSE COALESCE(pants.item_url, v_default_empty_url) 
-            END,
-            
-            'shoes', CASE 
-                WHEN v_is_overweight THEN v_default_empty_url 
-                ELSE COALESCE(shoes.item_url, v_default_empty_url) 
-            END,
-            
-            'accessory', CASE 
-                WHEN v_is_overweight THEN v_default_empty_url 
-                ELSE COALESCE(acc.item_url, v_default_empty_url) 
-            END
+            -- 褲子 (Pants)
+            'pants', jsonb_build_object(
+                'url', CASE 
+                    WHEN v_is_overweight THEN v_default_empty_url 
+                    ELSE COALESCE(pants.item_url, v_default_empty_url) 
+                END,
+                'z', COALESCE(pants.layer_order, 20) -- 預設 20
+            ),
+
+            -- 鞋子 (Shoes)
+            'shoes', jsonb_build_object(
+                'url', CASE 
+                    WHEN v_is_overweight THEN v_default_empty_url 
+                    ELSE COALESCE(shoes.item_url, v_default_empty_url) 
+                END,
+                'z', COALESCE(shoes.layer_order, 30) -- 預設 30
+            )
         )
         FROM (SELECT 1) AS dummy
         LEFT JOIN internal.clothes AS top ON top.id = v_pet_record.equipped_top_id
